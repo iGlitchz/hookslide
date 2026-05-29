@@ -27,6 +27,7 @@ export default function App() {
   } | null>(null);
 
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -61,6 +62,10 @@ export default function App() {
 
   const handleSubmit = useCallback(
     async (imageFile: File, blurb: string) => {
+      if (!session) {
+        setShowAuth(true);
+        return;
+      }
       try {
         await submit(imageFile, blurb);
       } catch (err) {
@@ -70,7 +75,7 @@ export default function App() {
         // other errors are already in state via useSubmissions
       }
     },
-    [submit]
+    [submit, session]
   );
 
   // Smooth scroll to results when loading starts
@@ -105,6 +110,10 @@ export default function App() {
 
   const handleRegenerate = useCallback(
     async (...args: Parameters<typeof regenerate>) => {
+      if (!session) {
+        setShowAuth(true);
+        return;
+      }
       try {
         await regenerate(...args);
       } catch (err) {
@@ -113,7 +122,7 @@ export default function App() {
         }
       }
     },
-    [regenerate]
+    [regenerate, session]
   );
 
   const activeSubmission = editorState
@@ -123,27 +132,30 @@ export default function App() {
     ? activeSubmission.slideshows.find((sw) => sw.id === editorState!.slideshowId)
     : null;
 
-  // Show auth screen while loading or when not signed in
   if (authLoading) {
     return <LoadingSpinner />;
-  }
-
-  if (!session) {
-    return <AuthModal onAuth={handleAuth} />;
   }
 
   return (
     <div className="app">
       {/* Top-right account controls */}
       <div className="account-bar">
-        {subscriptionStatus !== "active" && (
-          <button className="upgrade-btn" onClick={() => setShowPaywall(true)}>
-            Upgrade to Pro
+        {session ? (
+          <>
+            {subscriptionStatus !== "active" && (
+              <button className="upgrade-btn" onClick={() => setShowPaywall(true)}>
+                Upgrade to Pro
+              </button>
+            )}
+            <button className="signout-btn" onClick={signOut}>
+              Sign out
+            </button>
+          </>
+        ) : (
+          <button className="signout-btn" onClick={() => setShowAuth(true)}>
+            Sign in
           </button>
         )}
-        <button className="signout-btn" onClick={signOut}>
-          Sign out
-        </button>
       </div>
 
       {successMessage && (
@@ -205,6 +217,15 @@ export default function App() {
                 overlays
               )
             }
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAuth && (
+          <AuthModal
+            onAuth={handleAuth}
+            onClose={() => setShowAuth(false)}
           />
         )}
       </AnimatePresence>

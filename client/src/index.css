@@ -881,6 +881,23 @@ body {
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 4px;
+  position: relative;
+}
+
+.auth-close-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+.auth-close-btn:hover {
+  color: var(--text-primary);
 }
 
 .auth-logo-icon {

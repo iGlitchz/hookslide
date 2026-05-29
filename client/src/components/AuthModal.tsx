@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 interface AuthModalProps {
   onAuth: (email: string, password: string, mode: "signin" | "signup") => Promise<{ error: string | null }>;
   loading?: boolean;
+  onClose?: () => void;
 }
 
-export function AuthModal({ onAuth, loading }: AuthModalProps) {
+export function AuthModal({ onAuth, loading, onClose }: AuthModalProps) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,13 +25,16 @@ export function AuthModal({ onAuth, loading }: AuthModalProps) {
       setError(result.error);
     } else if (mode === "signup") {
       setSignupSuccess(true);
+    } else {
+      onClose?.();
     }
   };
 
   if (signupSuccess) {
     return (
-      <div className="auth-modal-overlay">
+      <div className="auth-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
         <div className="auth-modal">
+          {onClose && <button className="auth-close-btn" onClick={onClose}>✕</button>}
           <h2>Check your email</h2>
           <p>We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then sign in.</p>
           <button className="auth-btn-secondary" onClick={() => { setSignupSuccess(false); setMode("signin"); }}>
@@ -42,7 +46,7 @@ export function AuthModal({ onAuth, loading }: AuthModalProps) {
   }
 
   return (
-    <div className="auth-modal-overlay">
+    <div className="auth-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
       <motion.div
         className="auth-modal"
         initial={{ opacity: 0, scale: 0.96 }}
@@ -50,6 +54,7 @@ export function AuthModal({ onAuth, loading }: AuthModalProps) {
         transition={{ duration: 0.2 }}
       >
         <div className="auth-logo">
+          {onClose && <button className="auth-close-btn" onClick={onClose}>✕</button>}
           <span className="auth-logo-icon">✦</span>
           <span>Hook Slide</span>
         </div>
