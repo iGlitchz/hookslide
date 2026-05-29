@@ -1,0 +1,153 @@
+Hook→Slide — App Description
+============================
+
+Overview
+--------
+Hook→Slide is a web app that generates scroll-stopping social media slideshows
+for TikTok and Instagram Reels. You upload a product photo, describe your brand
+in a sentence, and the app produces three ready-to-post 2-slide sets — each
+with a different hook angle. Every slideshow is a vertical 9:16 pair: a hook
+slide that grabs attention and a product slide that delivers the payoff.
+
+
+How It Works
+------------
+1. You land on a full-screen hero banner with cycling lifestyle photos behind a
+   centered search bar (Google-style).
+
+2. In the search bar you:
+   - Attach a product reference image (shown as a pill with an X to remove).
+   - Type a short brand/product blurb.
+   - Hit the submit button.
+
+3. The server sends the blurb to an AI language model (Google Gemma 3 4B via
+   OpenRouter). The model is given a curated Hook Library of 25 proven
+   scroll-hook templates grouped into five styles:
+     • Curiosity / Pattern Interrupt
+     • Personal Story / Relatable Problem
+     • Natural Comparison
+     • Genuine Value / Hack
+     • Lifestyle / Casual
+
+   The AI picks templates that fit the product, fills in the blanks with
+   product specifics, or remixes them. It returns 3 hooks, each with:
+     - Hook text for Slide 1
+     - A casual Gen-Z follow-up line for Slide 2 (e.g. "i gotchu",
+       "say less", "trust me on this one") — or nothing if the hook
+       speaks for itself.
+     - Image generation prompts for both slides.
+
+4. Slide 1 image: Sourced from Pixabay (free stock) using keywords extracted
+   from the AI's prompt. Falls back to AI generation if Pixabay fails.
+   Slide 2 image: AI-generated via Runware at 576×1024 (9:16 vertical). The
+   prompt tells the model to place the product in a real-world scene that
+   matches the hook's vibe.
+
+5. All three slideshows appear in the Library below the hero, each as a
+   stacked card preview with action buttons to the right.
+
+
+The Library
+-----------
+- Each submission shows the product thumbnail, a truncated blurb, and a
+  "Remix" button.
+- Under each submission, the three generated slideshows are listed with 200px
+  spacing between them (enough room for the spread animation).
+- Each slideshow card has action buttons (accent purple):
+    • Delete — removes the slideshow (and the whole submission if empty).
+    • Download ZIP — placeholder (shows "Coming Soon" toast).
+    • Post to TikTok / Post to Instagram / Schedule Post — placeholders.
+
+- Clicking a card opens the Fullscreen Editor.
+
+
+Fullscreen Editor
+-----------------
+- Viewport-fitted modal (90vh) with two slides side by side.
+- Per-slide controls:
+    • Regenerate — re-generates the image with the same prompt.
+    • Add Text — drops a new draggable/editable text overlay.
+    • Export PNG / Export JPG — renders the slide at 2× resolution and
+      downloads it.
+- Text overlays are draggable and editable in place, using Montserrat
+  semibold with a 1.5px dark stroke and drop shadow for readability.
+- The editor scrolls internally if content overflows.
+
+
+Remix
+-----
+- Any submission's "Remix" button pre-fills the search bar with the original
+  blurb and product image, scrolls to the top, and lets you re-generate with
+  tweaks.
+
+
+Tech Stack
+----------
+Frontend:
+  - React 18 + TypeScript, built with Vite
+  - Framer Motion for animations (hero crossfade, card spread, modal)
+  - html-to-image for slide exports
+  - Lucide React for icons
+  - Fonts: Space Grotesk (UI), Montserrat (slide overlays)
+  - Dark theme: #0a0a0f background, #8b5cf6 purple accent
+  - Data persisted in localStorage (useLocalStorage hook)
+
+Backend:
+  - Node.js + Express (TypeScript, ESM)
+  - OpenRouter API → Google Gemma 3 4B for hook generation
+  - Runware SDK for AI image generation (Slide 2)
+  - Pixabay API for free stock images (Slide 1 + hero banner)
+  - Hero images cached in memory for 24 hours
+
+API Routes:
+  - POST /api/generate — accepts image + blurb, returns 3 slideshows
+  - POST /api/regenerate — re-generates a single slide image
+  - GET  /api/hero-images — returns cached Pixabay images for the hero banner
+  - GET  /api/health — health check
+
+
+Environment Variables (.env in project root)
+--------------------------------------------
+  OPENROUTER_API_KEY    — OpenRouter API key
+  OPENROUTER_MODEL      — LLM model (default: google/gemma-3-4b-it)
+  RUNWARE_API_KEY       — Runware image generation key
+  RUNWARE_IMAGE_MODEL   — Runware model ID
+  PIXABAY_API_KEY       — Pixabay image search key
+
+
+Running Locally
+---------------
+  npm run install:all   — install root + client + server dependencies
+  npm run dev           — starts both client (port 5173) and server (port 3001)
+
+
+Project Structure
+-----------------
+  Hook Library.md           — 25 curated hook templates (fed to the AI)
+  client/src/
+    App.tsx                 — main app shell, state management
+    components/
+      HeroBanner.tsx        — cycling background images, dark gradient
+      InputForm.tsx         — search bar with image pill, blurb input
+      LibraryView.tsx       — renders all submissions + slideshows
+      SubmissionRow.tsx     — submission header with remix button
+      SlideshowCard.tsx     — card preview with action buttons
+      FullscreenEditor.tsx  — modal editor with drag/edit overlays
+      TextOverlay.tsx       — draggable/editable text on slides
+      SlidePreview.tsx      — individual slide thumbnail
+      LoadingSpinner.tsx    — loading state
+    hooks/
+      useSubmissions.ts     — submission CRUD + API integration
+      useLocalStorage.ts    — persistent state in localStorage
+    services/
+      api.ts                — fetch wrappers for all API routes
+  server/src/
+    index.ts                — Express app setup, route registration
+    routes/
+      generate.ts           — main generation endpoint
+      regenerate.ts         — single slide re-generation
+      heroImages.ts         — cached hero background images
+    services/
+      hookGenerator.ts      — LLM prompt + Hook Library injection
+      imageGenerator.ts     — Runware image generation
+      pixabayService.ts     — Pixabay search + hero queries
