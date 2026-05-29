@@ -11,11 +11,20 @@ import createCheckoutSessionRouter from "./routes/createCheckoutSession.js";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
-];
-app.use(cors({ origin: allowedOrigins }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (
+      !origin ||
+      origin === "http://localhost:5173" ||
+      origin.endsWith(".vercel.app") ||
+      (process.env.CLIENT_URL && origin === process.env.CLIENT_URL.replace(/\/$/, ""))
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+}));
 
 // Stripe webhook MUST receive the raw body for signature verification.
 // Register this route BEFORE express.json() is applied.
