@@ -1,10 +1,12 @@
 import type { Request, Response, NextFunction } from "express";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type WebSocketLikeConstructor } from "@supabase/supabase-js";
+import WebSocket from "ws";
 import { supabaseAdmin } from "../services/supabaseAdmin.js";
 
 // Anon client for verifying user JWTs (auth.getUser respects the token)
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
+const realtimeTransport = WebSocket as unknown as WebSocketLikeConstructor;
 
 export interface AuthenticatedRequest extends Request {
   userId: string;
@@ -28,6 +30,7 @@ export async function verifyAuth(
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: { autoRefreshToken: false, persistSession: false },
     global: { headers: { Authorization: `Bearer ${token}` } },
+    realtime: { transport: realtimeTransport },
   });
 
   const { data: { user }, error } = await supabase.auth.getUser(token);
