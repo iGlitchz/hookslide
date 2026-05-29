@@ -37,8 +37,15 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     if (params.has("session_id")) {
       setSuccessMessage("You're subscribed! Start generating slides.");
-      refetchProfile();
       window.history.replaceState({}, "", window.location.pathname);
+      // Webhook may not have fired yet — poll until status flips to active (max ~10s)
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        await refetchProfile();
+        if (attempts >= 5) clearInterval(poll);
+      }, 2000);
+      return () => clearInterval(poll);
     } else if (params.has("upgrade_canceled")) {
       window.history.replaceState({}, "", window.location.pathname);
     }
