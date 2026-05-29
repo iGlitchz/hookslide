@@ -9,7 +9,8 @@ import stripeWebhookRouter from "./routes/stripeWebhook.js";
 import createCheckoutSessionRouter from "./routes/createCheckoutSession.js";
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT || 3001);
+const HOST = "0.0.0.0";
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -41,6 +42,6 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
 });
