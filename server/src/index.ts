@@ -38,6 +38,14 @@ app.use("/api/regenerate", regenerateRouter);
 app.use("/api/hero-images", heroImagesRouter);
 app.use("/api/create-checkout-session", createCheckoutSessionRouter);
 
+app.get("/", (_req, res) => {
+  res.status(200).send("ok");
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
