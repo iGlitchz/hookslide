@@ -5,7 +5,7 @@ import { supabaseAdmin } from "../services/supabaseAdmin.js";
 const router = Router();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-04-30.basil",
+  apiVersion: "2026-05-27.dahlia",
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
