@@ -3,6 +3,10 @@ import { supabase } from "./supabaseClient";
 
 export const SUBSCRIPTION_REQUIRED = "subscription_required";
 
+// In dev: empty string → Vite proxy handles /api/* → localhost:3001
+// In production: set VITE_API_URL to your Railway server URL in Vercel's env vars
+const API_BASE = (import.meta.env.VITE_API_URL as string) || "";
+
 async function authHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) return {};
@@ -17,7 +21,7 @@ export async function generateSlideshows(
   formData.append("image", imageFile);
   formData.append("blurb", blurb);
 
-  const res = await fetch("/api/generate", {
+  const res = await fetch(`${API_BASE}/api/generate`, {
     method: "POST",
     headers: await authHeaders(),
     body: formData,
@@ -36,7 +40,7 @@ export async function regenerateSlide(
   slideIndex: number,
   blurb: string
 ): Promise<{ slide: Slide }> {
-  const res = await fetch("/api/regenerate", {
+  const res = await fetch(`${API_BASE}/api/regenerate`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(await authHeaders()) },
     body: JSON.stringify({ imagePrompt, slideIndex, blurb }),
@@ -52,7 +56,7 @@ export async function regenerateSlide(
 
 export async function fetchHeroImages(): Promise<string[]> {
   try {
-    const res = await fetch("/api/hero-images");
+    const res = await fetch(`${API_BASE}/api/hero-images`);
     if (!res.ok) return [];
     const data = await res.json();
     return data.images || [];

@@ -14,7 +14,8 @@ export function PaywallModal({ onClose, userEmail }: PaywallModalProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/create-checkout-session", {
+      const apiBase = (import.meta.env.VITE_API_URL as string) || "";
+      const res = await fetch(`${apiBase}/api/create-checkout-session`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
