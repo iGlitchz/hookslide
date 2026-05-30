@@ -5,7 +5,7 @@ export const SUBSCRIPTION_REQUIRED = "subscription_required";
 
 // In dev: empty string → Vite proxy handles /api/* → localhost:3001
 // In production: set VITE_API_URL to your Railway server URL in Vercel's env vars
-const API_BASE = (import.meta.env.VITE_API_URL as string) || "";
+const API_BASE = ((import.meta.env.VITE_API_URL as string) || "").replace(/\/$/, "");
 
 async function authHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await supabase.auth.getSession();
