@@ -5,9 +5,11 @@ import { supabaseAdmin } from "../services/supabaseAdmin.js";
 
 const router = Router();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-05-27.dahlia",
-});
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-05-27.dahlia" });
+  return _stripe;
+}
 
 // Lightweight JWT-only check — does NOT gate on subscription status
 // so that free/canceled users can reach this to upgrade.
@@ -57,7 +59,7 @@ router.post("/", async (req, res) => {
   let customerId: string | undefined = profile?.stripe_customer_id ?? undefined;
 
   if (!customerId) {
-    const customer = await stripe.customers.create({
+    const customer = await getStripe().customers.create({
       email,
       metadata: { supabase_user_id: userId },
     });
@@ -69,7 +71,7 @@ router.post("/", async (req, res) => {
       .eq("id", userId);
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     customer: customerId,
     client_reference_id: userId,
     mode: "subscription",

@@ -1,5 +1,15 @@
 import "./loadEnv.js"; // Must be first — loads .env before any other local module reads process.env
 
+// Catch any unhandled error so Railway logs show the cause instead of a silent crash
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err);
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION:", reason);
+  process.exit(1);
+});
+
 import express from "express";
 import cors from "cors";
 import generateRouter from "./routes/generate.js";

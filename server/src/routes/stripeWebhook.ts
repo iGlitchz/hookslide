@@ -4,9 +4,11 @@ import { supabaseAdmin } from "../services/supabaseAdmin.js";
 
 const router = Router();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-05-27.dahlia",
-});
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-05-27.dahlia" });
+  return _stripe;
+}
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -21,7 +23,7 @@ router.post("/", async (req, res) => {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    event = getStripe().webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Signature verification failed";
     console.error("Stripe webhook signature error:", message);
