@@ -22,6 +22,22 @@ const app = express();
 const PORT = Number(process.env.PORT || 3001);
 const HOST = "0.0.0.0";
 
+// Log which env vars are present so we can spot missing keys in Railway
+const requiredEnvVars = [
+  "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
+  "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_ID",
+  "RUNWARE_API_KEY", "OPENROUTER_API_KEY", "CLIENT_URL",
+];
+for (const key of requiredEnvVars) {
+  console.log(`[env] ${key}: ${process.env[key] ? "SET" : "MISSING"}`);
+}
+
+// Log every incoming request so we can confirm requests reach Express
+app.use((req, _res, next) => {
+  console.log(`[req] ${req.method} ${req.path}`);
+  next();
+});
+
 app.use(cors({
   origin: (origin, callback) => {
     if (
