@@ -34,7 +34,11 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: "https://hookslide.vercel.app/" },
+    });
     return { error: error?.message ?? null };
   }, []);
 

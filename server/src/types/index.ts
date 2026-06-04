@@ -36,6 +36,8 @@ export interface RegenerateRequest {
   slideIndex: number;
   blurb: string;
   imagePrompt: string;
+  /** Base64 data URI of the original product photo, used for slide 2 regeneration. */
+  productImageUrl?: string;
 }
 
 export interface GenerateResponse {

@@ -38,12 +38,13 @@ export async function generateSlideshows(
 export async function regenerateSlide(
   imagePrompt: string,
   slideIndex: number,
-  blurb: string
+  blurb: string,
+  productImageUrl?: string
 ): Promise<{ slide: Slide }> {
   const res = await fetch(`${API_BASE}/api/regenerate`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-    body: JSON.stringify({ imagePrompt, slideIndex, blurb }),
+    body: JSON.stringify({ imagePrompt, slideIndex, blurb, productImageUrl }),
   });
 
   if (!res.ok) {

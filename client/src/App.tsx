@@ -8,6 +8,8 @@ import { LibraryView } from "./components/LibraryView";
 import { FullscreenEditor } from "./components/FullscreenEditor";
 import { AuthModal } from "./components/AuthModal";
 import { PaywallModal } from "./components/PaywallModal";
+import { TermsPage } from "./components/TermsPage";
+import { PrivacyPage } from "./components/PrivacyPage";
 import { useSubmissions } from "./hooks/useSubmissions";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
@@ -29,6 +31,7 @@ export default function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [page, setPage] = useState<"home" | "terms" | "privacy">("home");
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputFormRef = useRef<InputFormHandle>(null);
@@ -136,8 +139,17 @@ export default function App() {
     return <LoadingSpinner />;
   }
 
+  if (page === "terms") return <TermsPage onHome={() => setPage("home")} />;
+  if (page === "privacy") return <PrivacyPage onHome={() => setPage("home")} />;
+
   return (
     <div className="app">
+      {/* Top-left legal nav tabs */}
+      <div className="legal-nav">
+        <button className="legal-nav-btn" onClick={() => setPage("terms")}>Terms</button>
+        <button className="legal-nav-btn" onClick={() => setPage("privacy")}>Privacy</button>
+      </div>
+
       {/* Top-right account controls */}
       <div className="account-bar">
         {session ? (
@@ -206,7 +218,8 @@ export default function App() {
                 editorState.slideshowId,
                 slideIndex,
                 imagePrompt,
-                activeSubmission.brandBlurb
+                activeSubmission.brandBlurb,
+                activeSubmission.productImageUrl
               )
             }
             onUpdateOverlays={(slideIndex, overlays: TextOverlay[]) =>

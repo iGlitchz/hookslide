@@ -16,7 +16,7 @@ const router = Router();
 
 router.post("/", verifyAuth as any, async (req, res) => {
   try {
-    const { imagePrompt, slideIndex, hook, blurb } =
+    const { imagePrompt, slideIndex, hook, blurb, productImageUrl } =
       req.body as RegenerateRequest;
 
     if (!imagePrompt) {
@@ -50,8 +50,9 @@ router.post("/", verifyAuth as any, async (req, res) => {
         slide = await generateSlide(imagePrompt, []);
       }
     } else {
-      // Slide 2: AI-generated via Runware
-      slide = await generateSlide(imagePrompt, []);
+      // Slide 2: AI-generated via Runware, with the original product photo as
+      // a reference so the subject stays consistent across regenerations.
+      slide = await generateSlide(imagePrompt, [], productImageUrl);
     }
 
     console.log("[regenerate] Done");

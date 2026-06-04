@@ -79,8 +79,9 @@ router.post("/", verifyAuth as any, upload.single("image"), async (req, res) => 
               return generateSlide(hookData.slide1Prompt, slide1Overlays);
             }
           })(),
-          // Slide 2: AI-generated via Runware
-          generateSlide(hookData.slide2Prompt, slide2Overlays),
+          // Slide 2: AI-generated via Runware, using the uploaded product photo
+          // as a reference so the subject is recognisable in the new scene.
+          generateSlide(hookData.slide2Prompt, slide2Overlays, imageBase64),
         ]);
 
         return {

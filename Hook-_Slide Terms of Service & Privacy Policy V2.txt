@@ -1,0 +1,55 @@
+﻿Hook->Slide Privacy Policy
+Effective Date: June 2, 2026
+Hook->Slide is committed to protecting your privacy. This policy explains how your information is processed when you use our services to generate slideshows and integrate with the TikTok API.
+1. Data Collection and Processing
+We operate on a minimal-data model. We do not retain your content or authentication tokens beyond your active session.
+Data Category
+	Purpose of Processing
+	Third-Party Services
+	Retention Period
+ 
+	Payment Information
+	Processing subscription or service fees
+	Stripe
+	Not held on Hook->Slide servers
+	Generative Prompts
+	Creating AI-generated slideshows
+	Runware API, OpenRouter
+	Active session only
+	Account Authentication
+	Direct posting and account linking
+	TikTok API
+	Active session only
+	2. Third-Party AI Integrations
+Hook->Slide utilizes external APIs, specifically Runware API and OpenRouter, to generate your content. No personal identifying information is transmitted to these third parties. Only the structural prompts required to generate your slideshows are processed.
+3. Children's Privacy
+In compliance with our integration guidelines, Hook->Slide enforces the same age restrictions as TikTok. You must be at least 13 years of age to use this application.
+4. Contact Information
+For privacy inquiries or support requests, you may format your request as follows and send it to our official channel:
+Subject: Privacy Inquiry - [Your Subject]
+To: cocasiomi@gmail.com
+
+Message Body:
+- Inquiry Type (Data Deletion / Clarification / TikTok API Revocation)
+- Description of Request
+
+
+
+
+
+
+Hook->Slide Terms of Service
+Effective Date: June 2, 2026
+These Terms of Service govern your use of the Hook->Slide web application, developed and owned by Carlos Ocasio Milanes. By accessing Hook->Slide, you agree to be bound by these terms.
+1. User Responsibilities
+* You must be at least 13 years old to operate this service.
+* You are responsible for ensuring that your TikTok account remains in good standing.
+* You agree not to use the service to generate content that violates TikTok's community guidelines.
+2. Intellectual Property & Copyright
+We believe in empowering creators. Therefore, the copyright structure is as follows:
+1. User Ownership: You retain 100% full copyright ownership of all the slideshows and content generated through Hook->Slide.
+2. No Licensing Claims: Hook->Slide does not claim any licensing rights, royalties, or distribution rights over the media you create.
+3. Payments and Subscriptions
+All financial transactions are securely processed through Stripe. Hook->Slide does not store your credit card information. Disputes and refunds are handled in accordance with Stripe's standard terms.
+4. Limitation of Liability
+Hook->Slide and Carlos Ocasio Milanes shall not be held liable for any indirect, incidental, or consequential damages resulting from the use or inability to use the service, including any actions taken by TikTok regarding your account.

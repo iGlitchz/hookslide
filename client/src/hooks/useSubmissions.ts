@@ -50,9 +50,15 @@ export function useSubmissions() {
       slideshowId: string,
       slideIndex: 0 | 1,
       imagePrompt: string,
-      blurb: string
+      blurb: string,
+      productImageUrl?: string
     ) => {
-      const { slide } = await regenerateSlide(imagePrompt, slideIndex, blurb);
+      const { slide } = await regenerateSlide(
+        imagePrompt,
+        slideIndex,
+        blurb,
+        productImageUrl
+      );
 
       setSubmissions((prev) =>
         prev.map((sub) => {
