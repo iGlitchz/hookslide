@@ -835,7 +835,7 @@ body {
   content: attr(data-tooltip);
   position: absolute;
   right: 0;
-  bottom: calc(100% + 10px);
+  top: calc(100% + 10px);
   padding: 6px 10px;
   border-radius: 999px;
   background: rgba(17, 17, 24, 0.96);
@@ -846,7 +846,7 @@ body {
   letter-spacing: 0.01em;
   white-space: nowrap;
   opacity: 0;
-  transform: translateY(4px);
+  transform: translateY(-4px);
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
@@ -858,26 +858,7 @@ body {
 }
 
 .tiktok-login-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(37, 244, 238, 0.16), rgba(255, 0, 80, 0.16));
-  color: #f8f8fc;
-  border: 1px solid rgba(37, 244, 238, 0.35);
-  border-radius: var(--radius-pill);
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: default;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-}
-
-.tiktok-login-wrap:hover .tiktok-login-btn,
-.tiktok-login-wrap:focus-within .tiktok-login-btn {
-  border-color: rgba(255, 255, 255, 0.18);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
 }
 
 /* ============================================
