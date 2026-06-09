@@ -164,9 +164,16 @@ export default function App() {
             </button>
           </>
         ) : (
-          <button className="signout-btn" onClick={() => setShowAuth(true)}>
-            Sign in
-          </button>
+          <>
+            <button className="signout-btn" onClick={() => setShowAuth(true)}>
+              Sign in
+            </button>
+            <div className="tiktok-login-wrap" data-tooltip="Upload straight to TikTok">
+              <button className="tiktok-login-btn" type="button" aria-label="Login to TikTok mockup">
+                Login to TikTok
+              </button>
+            </div>
+          </>
         )}
       </div>
 
