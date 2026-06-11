@@ -18,17 +18,21 @@ export interface Slide {
   imageUrl: string;
   imagePrompt: string;
   textOverlays: TextOverlay[];
+  generationSource?: "pixabay" | "ai";
 }
 
 export interface Slideshow {
   id: string;
   hook: Hook;
-  slides: [Slide, Slide];
+  slides: Slide[];
 }
+
+export type PostFormat = "carousel" | "infographic" | "poster";
 
 export interface GenerateRequest {
   blurb: string;
-  imageBase64: string;
+  postFormat?: PostFormat;
+  slideCount?: number;
 }
 
 export interface RegenerateRequest {
@@ -36,6 +40,8 @@ export interface RegenerateRequest {
   slideIndex: number;
   blurb: string;
   imagePrompt: string;
+  postFormat?: PostFormat;
+  generationSource?: "pixabay" | "ai";
   /** Base64 data URI of the original product photo, used for slide 2 regeneration. */
   productImageUrl?: string;
 }

@@ -17,6 +17,7 @@ import regenerateRouter from "./routes/regenerate.js";
 import heroImagesRouter from "./routes/heroImages.js";
 import stripeWebhookRouter from "./routes/stripeWebhook.js";
 import createCheckoutSessionRouter from "./routes/createCheckoutSession.js";
+import tiktokRouter from "./routes/tiktok.js";
 
 const app = express();
 const PORT = Number(process.env.PORT || 3001);
@@ -63,6 +64,7 @@ app.use("/api/generate", generateRouter);
 app.use("/api/regenerate", regenerateRouter);
 app.use("/api/hero-images", heroImagesRouter);
 app.use("/api/create-checkout-session", createCheckoutSessionRouter);
+app.use("/api/tiktok", tiktokRouter);
 
 app.get("/", (_req, res) => {
   res.status(200).send("ok");

@@ -16,7 +16,7 @@ const router = Router();
 
 router.post("/", verifyAuth as any, async (req, res) => {
   try {
-    const { imagePrompt, slideIndex, hook, blurb, productImageUrl } =
+    const { imagePrompt, slideIndex, hook, blurb, postFormat, generationSource, productImageUrl } =
       req.body as RegenerateRequest;
 
     if (!imagePrompt) {
@@ -33,8 +33,10 @@ router.post("/", verifyAuth as any, async (req, res) => {
 
     let slide: Slide;
 
-    if (slideIndex === 0) {
-      // Slide 1: fetch a different Pixabay image
+    const shouldUsePixabay = generationSource === "pixabay";
+
+    if (shouldUsePixabay) {
+      // Pixabay-backed slide: fetch another stock image first.
       const keywords = extractKeywords(imagePrompt);
       console.log("[regenerate] Pixabay search for slide 1:", keywords);
       try {
@@ -44,15 +46,17 @@ router.post("/", verifyAuth as any, async (req, res) => {
           imageUrl,
           imagePrompt,
           textOverlays: [],
+          generationSource: "pixabay",
         };
       } catch (err) {
         console.warn("[regenerate] Pixabay failed, falling back to AI:", err);
         slide = await generateSlide(imagePrompt, []);
+        slide = { ...slide, generationSource: "ai" };
       }
     } else {
-      // Slide 2: AI-generated via Runware, with the original product photo as
-      // a reference so the subject stays consistent across regenerations.
+      // AI-backed slide: use reference image when available for carousel/poster.
       slide = await generateSlide(imagePrompt, [], productImageUrl);
+      slide = { ...slide, generationSource: "ai" };
     }
 
     console.log("[regenerate] Done");

@@ -8,13 +8,15 @@ import { LibraryView } from "./components/LibraryView";
 import { FullscreenEditor } from "./components/FullscreenEditor";
 import { AuthModal } from "./components/AuthModal";
 import { PaywallModal } from "./components/PaywallModal";
+import { AccountsDashboardModal } from "./components/AccountsDashboardModal";
+import { TikTokPostModal } from "./components/TikTokPostModal";
 import { TermsPage } from "./components/TermsPage";
 import { PrivacyPage } from "./components/PrivacyPage";
 import { useSubmissions } from "./hooks/useSubmissions";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
 import { SUBSCRIPTION_REQUIRED } from "./services/api";
-import type { TextOverlay } from "./types";
+import type { Slideshow, TextOverlay } from "./types";
 
 export default function App() {
   const { session, user, loading: authLoading, signUp, signIn, signOut } = useAuth();
@@ -30,6 +32,8 @@ export default function App() {
 
   const [showPaywall, setShowPaywall] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showAccountsDashboard, setShowAccountsDashboard] = useState(false);
+  const [tiktokTarget, setTikTokTarget] = useState<Slideshow | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [page, setPage] = useState<"home" | "terms" | "privacy">("home");
 
@@ -64,13 +68,13 @@ export default function App() {
   );
 
   const handleSubmit = useCallback(
-    async (imageFile: File, blurb: string) => {
+    async (...args: Parameters<typeof submit>) => {
       if (!session) {
         setShowAuth(true);
         return;
       }
       try {
-        await submit(imageFile, blurb);
+        await submit(...args);
       } catch (err) {
         if (err instanceof Error && err.message === SUBSCRIPTION_REQUIRED) {
           setShowPaywall(true);
@@ -154,6 +158,9 @@ export default function App() {
       <div className="account-bar">
         {session ? (
           <>
+            <button className="signout-btn" onClick={() => setShowAccountsDashboard(true)}>
+              Accounts
+            </button>
             {subscriptionStatus !== "active" && (
               <button className="upgrade-btn" onClick={() => setShowPaywall(true)}>
                 Upgrade to Pro
@@ -206,10 +213,13 @@ export default function App() {
         <LibraryView
           submissions={submissions}
           onCardClick={handleCardClick}
-          onRegenerate={handleRegenerate}
-          onUpdateOverlays={updateOverlays}
           onDelete={handleDelete}
           onRemix={handleRemix}
+          onPostTikTok={(submissionId, slideshowId) => {
+            const submission = submissions.find((item) => item.id === submissionId);
+            const slideshow = submission?.slideshows.find((item) => item.id === slideshowId);
+            if (slideshow) setTikTokTarget(slideshow);
+          }}
         />
       </div>
 
@@ -220,6 +230,7 @@ export default function App() {
             slideshow={activeSlideshow}
             submissionId={editorState.submissionId}
             blurb={activeSubmission.brandBlurb}
+            postFormat={activeSubmission.postFormat || "carousel"}
             onClose={() => setEditorState(null)}
             onRegenerate={(slideIndex, imagePrompt) =>
               handleRegenerate(
@@ -228,6 +239,7 @@ export default function App() {
                 slideIndex,
                 imagePrompt,
                 activeSubmission.brandBlurb,
+                activeSubmission.postFormat || "carousel",
                 activeSubmission.productImageUrl
               )
             }
@@ -249,6 +261,18 @@ export default function App() {
             onAuth={handleAuth}
             onClose={() => setShowAuth(false)}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAccountsDashboard && (
+          <AccountsDashboardModal onClose={() => setShowAccountsDashboard(false)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {tiktokTarget && (
+          <TikTokPostModal slideshow={tiktokTarget} onClose={() => setTikTokTarget(null)} />
         )}
       </AnimatePresence>
 

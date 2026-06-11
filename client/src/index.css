@@ -289,6 +289,55 @@ body {
   opacity: 0.5;
 }
 
+.post-format-controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.post-format-btn {
+  border: 1px solid var(--border-medium);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.post-format-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.post-format-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(139, 92, 246, 0.14);
+}
+
+.slide-count-controls {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.slide-count-controls input {
+  flex: 1;
+}
+
+.attachment-hint {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 /* ============================================
    Loading Spinner
    ============================================ */
@@ -1262,6 +1311,15 @@ body {
 
   .card-stack {
     width: 120px;
+  }
+
+  .post-format-controls {
+    gap: 6px;
+  }
+
+  .post-format-btn {
+    font-size: 12px;
+    padding: 6px 10px;
   }
 }
 

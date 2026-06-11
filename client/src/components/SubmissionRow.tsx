@@ -9,6 +9,7 @@ interface Props {
   onCardClick: (submissionId: string, slideshowId: string) => void;
   onDelete: (submissionId: string, slideshowId: string) => void;
   onRemix: (imageUrl: string, blurb: string) => void;
+  onPostTikTok: (submissionId: string, slideshowId: string) => void;
 }
 
 const containerVariants = {
@@ -29,7 +30,14 @@ const cardVariants = {
   },
 };
 
-export function SubmissionRow({ submission, index, onCardClick, onDelete, onRemix }: Props) {
+export function SubmissionRow({
+  submission,
+  index,
+  onCardClick,
+  onDelete,
+  onRemix,
+  onPostTikTok,
+}: Props) {
   return (
     <motion.div
       className="submission-row"
@@ -64,6 +72,7 @@ export function SubmissionRow({ submission, index, onCardClick, onDelete, onRemi
               slideshow={sw}
               onClick={() => onCardClick(submission.id, sw.id)}
               onDelete={() => onDelete(submission.id, sw.id)}
+              onPostTikTok={() => onPostTikTok(submission.id, sw.id)}
             />
           </motion.div>
         ))}

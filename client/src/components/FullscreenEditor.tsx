@@ -10,25 +10,30 @@ interface Props {
   slideshow: Slideshow;
   submissionId: string;
   blurb: string;
+  postFormat: "carousel" | "infographic" | "poster";
   onClose: () => void;
-  onRegenerate: (slideIndex: 0 | 1, imagePrompt: string) => void;
-  onUpdateOverlays: (slideIndex: 0 | 1, overlays: TextOverlayType[]) => void;
+  onRegenerate: (
+    slideIndex: number,
+    imagePrompt: string,
+    generationSource?: "pixabay" | "ai"
+  ) => void;
+  onUpdateOverlays: (slideIndex: number, overlays: TextOverlayType[]) => void;
 }
 
 export function FullscreenEditor({
   slideshow,
   submissionId,
   blurb,
+  postFormat,
   onClose,
   onRegenerate,
   onUpdateOverlays,
 }: Props) {
-  const slide1Ref = useRef<HTMLDivElement>(null);
-  const slide2Ref = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const [regenerating, setRegenerating] = useState<number | null>(null);
 
   const handleOverlayUpdate = useCallback(
-    (slideIndex: 0 | 1, updated: TextOverlayType) => {
+    (slideIndex: number, updated: TextOverlayType) => {
       const slide = slideshow.slides[slideIndex];
       const newOverlays = slide.textOverlays.map((o) =>
         o.id === updated.id ? updated : o
@@ -39,7 +44,7 @@ export function FullscreenEditor({
   );
 
   const handleOverlayDelete = useCallback(
-    (slideIndex: 0 | 1, overlayId: string) => {
+    (slideIndex: number, overlayId: string) => {
       const slide = slideshow.slides[slideIndex];
       const newOverlays = slide.textOverlays.filter((o) => o.id !== overlayId);
       onUpdateOverlays(slideIndex, newOverlays);
@@ -48,7 +53,7 @@ export function FullscreenEditor({
   );
 
   const handleAddText = useCallback(
-    (slideIndex: 0 | 1) => {
+    (slideIndex: number) => {
       const slide = slideshow.slides[slideIndex];
       const newOverlay: TextOverlayType = {
         id: v4(),
@@ -64,10 +69,11 @@ export function FullscreenEditor({
   );
 
   const handleRegenerate = useCallback(
-    async (slideIndex: 0 | 1) => {
+    async (slideIndex: number) => {
       setRegenerating(slideIndex);
       try {
-        await onRegenerate(slideIndex, slideshow.slides[slideIndex].imagePrompt);
+        const target = slideshow.slides[slideIndex];
+        await onRegenerate(slideIndex, target.imagePrompt, target.generationSource);
       } finally {
         setRegenerating(null);
       }
@@ -76,9 +82,8 @@ export function FullscreenEditor({
   );
 
   const handleExport = useCallback(
-    async (slideIndex: 0 | 1, format: "png" | "jpg") => {
-      const ref = slideIndex === 0 ? slide1Ref : slide2Ref;
-      const node = ref.current;
+    async (slideIndex: number, format: "png" | "jpg") => {
+      const node = slideRefs.current[slideIndex];
       if (!node) return;
 
       try {
@@ -98,15 +103,16 @@ export function FullscreenEditor({
     []
   );
 
-  const renderSlide = (slide: Slide, slideIndex: 0 | 1) => {
-    const ref = slideIndex === 0 ? slide1Ref : slide2Ref;
+  const renderSlide = (slide: Slide, slideIndex: number) => {
     const isRegenerating = regenerating === slideIndex;
 
     return (
       <div className="editor-slide-wrapper">
         <div className="editor-slide-header">
           <span className="slide-label">
-            {slideIndex === 0 ? "Slide 1 — Hook" : "Slide 2 — Product"}
+            {postFormat === "carousel"
+              ? `Slide ${slideIndex + 1}`
+              : `${postFormat.charAt(0).toUpperCase()}${postFormat.slice(1)} Slide`}
           </span>
           <div className="slide-actions">
             <button
@@ -141,7 +147,12 @@ export function FullscreenEditor({
           </div>
         </div>
 
-        <div className="editor-slide" ref={ref}>
+        <div
+          className="editor-slide"
+          ref={(node) => {
+            slideRefs.current[slideIndex] = node;
+          }}
+        >
           {isRegenerating && (
             <div className="slide-regenerating">
               <div className="spinner small" />
@@ -154,7 +165,7 @@ export function FullscreenEditor({
               <TextOverlay
                 key={overlay.id}
                 overlay={overlay}
-                containerRef={ref}
+                containerRef={{ current: slideRefs.current[slideIndex] }}
                 onUpdate={(updated) => handleOverlayUpdate(slideIndex, updated)}
                 onDelete={(id) => handleOverlayDelete(slideIndex, id)}
               />
@@ -192,8 +203,9 @@ export function FullscreenEditor({
           </div>
 
           <div className="editor-slides">
-            {renderSlide(slideshow.slides[0], 0)}
-            {renderSlide(slideshow.slides[1], 1)}
+            {slideshow.slides.map((slide, index) => (
+              <div key={slide.id}>{renderSlide(slide, index)}</div>
+            ))}
           </div>
         </motion.div>
       </motion.div>

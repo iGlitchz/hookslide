@@ -1,4 +1,4 @@
-import type { Slideshow, Slide } from "../types";
+import type { Slideshow, Slide, GenerationOptions, PostFormat } from "../types";
 import { supabase } from "./supabaseClient";
 
 export const SUBSCRIPTION_REQUIRED = "subscription_required";
@@ -14,12 +14,16 @@ async function authHeaders(): Promise<Record<string, string>> {
 }
 
 export async function generateSlideshows(
-  imageFile: File,
-  blurb: string
+  options: GenerationOptions
 ): Promise<{ slideshows: Slideshow[]; productImageUrl: string }> {
   const formData = new FormData();
-  formData.append("image", imageFile);
-  formData.append("blurb", blurb);
+  formData.append("blurb", options.blurb);
+  formData.append("postFormat", options.postFormat);
+  formData.append("slideCount", String(options.slideCount));
+
+  options.attachments.forEach((file) => {
+    formData.append("attachments", file);
+  });
 
   const res = await fetch(`${API_BASE}/api/generate`, {
     method: "POST",
@@ -39,12 +43,13 @@ export async function regenerateSlide(
   imagePrompt: string,
   slideIndex: number,
   blurb: string,
+  postFormat: PostFormat,
   productImageUrl?: string
 ): Promise<{ slide: Slide }> {
   const res = await fetch(`${API_BASE}/api/regenerate`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-    body: JSON.stringify({ imagePrompt, slideIndex, blurb, productImageUrl }),
+    body: JSON.stringify({ imagePrompt, slideIndex, blurb, postFormat, productImageUrl }),
   });
 
   if (!res.ok) {
@@ -64,4 +69,43 @@ export async function fetchHeroImages(): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+export interface TikTokStatus {
+  connected: boolean;
+  available: boolean;
+  reason?: string;
+}
+
+export async function getTikTokStatus(): Promise<TikTokStatus> {
+  const res = await fetch(`${API_BASE}/api/tiktok/status`, {
+    headers: await authHeaders(),
+  });
+  if (!res.ok) {
+    return { connected: false, available: false, reason: "Status unavailable" };
+  }
+  return res.json();
+}
+
+export async function startTikTokConnect(): Promise<{ url: string }> {
+  const res = await fetch(`${API_BASE}/api/tiktok/connect/start`, {
+    headers: await authHeaders(),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "TikTok connect unavailable");
+  return data;
+}
+
+export async function postToTikTok(payload: {
+  caption: string;
+  slides: Array<{ imageUrl: string }>;
+}): Promise<{ queued: boolean; message?: string }> {
+  const res = await fetch(`${API_BASE}/api/tiktok/post`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "TikTok post failed");
+  return data;
 }

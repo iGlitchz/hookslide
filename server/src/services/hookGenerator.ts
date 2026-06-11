@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
-import type { Hook } from "../types/index.js";
+import type { Hook, PostFormat } from "../types/index.js";
 import { extractKeywords } from "./pixabayService.js";
 
 let openai: OpenAI | null = null;
@@ -51,7 +51,7 @@ interface HookLLMOutput {
   }>;
 }
 
-export async function generateHooks(blurb: string): Promise<{
+export async function generateHooks(blurb: string, postFormat: PostFormat = "carousel"): Promise<{
   hooks: Array<{
     hook: Hook;
     slide1Prompt: string;
@@ -69,9 +69,9 @@ export async function generateHooks(blurb: string): Promise<{
     messages: [
       {
         role: "system",
-        content: `You write hooks for TikTok/Reels slideshows. Your hooks sound like a real person talking to their friend — never like an ad.
+        content: `You write hooks for TikTok/Reels content. Your hooks sound like a real person talking to their friend — never like an ad.
 
-Given a product blurb, generate exactly 3 hooks for 2-slide social slideshows.
+      Given a product blurb, generate exactly 3 hook options for a ${postFormat} post format.
 
 === HOOK LIBRARY — YOU MUST USE THESE TEMPLATES ===
 ${hookLibrary || "No hook library loaded."}
@@ -120,7 +120,7 @@ Respond with ONLY this JSON, no other text:
       },
       {
         role: "user",
-        content: `Product blurb:\n\n"${blurb}"\n\nGenerate 3 hooks. Hook #1 MUST be curiosity/intrigue. Hooks #2 and #3 must be from two different other categories. All hooks must use templates from the Hook Library. Keep it casual and natural — zero salesy vibes. Respond with ONLY valid JSON.`,
+        content: `Product blurb:\n\n"${blurb}"\n\nPost format: ${postFormat}.\n\nGenerate 3 hooks. Hook #1 MUST be curiosity/intrigue. Hooks #2 and #3 must be from two different other categories. All hooks must use templates from the Hook Library. Keep it casual and natural — zero salesy vibes. Respond with ONLY valid JSON.`,
       },
     ],
     temperature: 0.9,

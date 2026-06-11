@@ -18,18 +18,29 @@ export interface Slide {
   imageUrl: string;
   imagePrompt: string;
   textOverlays: TextOverlay[];
+  generationSource?: "pixabay" | "ai";
 }
 
 export interface Slideshow {
   id: string;
   hook: Hook;
-  slides: [Slide, Slide];
+  slides: Slide[];
+}
+
+export type PostFormat = "carousel" | "infographic" | "poster";
+
+export interface GenerationOptions {
+  blurb: string;
+  postFormat: PostFormat;
+  slideCount: number;
+  attachments: File[];
 }
 
 export interface Submission {
   id: string;
   productImageUrl: string;
   brandBlurb: string;
+  postFormat?: PostFormat;
   slideshows: Slideshow[];
   createdAt: number;
 }

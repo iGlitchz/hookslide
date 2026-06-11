@@ -5,6 +5,7 @@ import { generateHooks } from "../services/hookGenerator.js";
 import { generateSlide } from "../services/imageGenerator.js";
 import {
   searchPixabayImage,
+  extractKeywords,
 } from "../services/pixabayService.js";
 import { verifyAuth } from "../middleware/auth.js";
 import type {
@@ -12,32 +13,74 @@ import type {
   Slide,
   TextOverlay,
   GenerateResponse,
+  PostFormat,
 } from "../types/index.js";
 
 const router = Router();
-const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } });
+const upload = multer({ limits: { fileSize: 15 * 1024 * 1024, files: 12 } });
 
-router.post("/", verifyAuth as any, upload.single("image"), async (req, res) => {
+function clampSlideCount(rawCount: unknown): number {
+  const parsed = Number(rawCount);
+  if (!Number.isFinite(parsed)) return 6;
+  return Math.max(1, Math.min(6, Math.floor(parsed)));
+}
+
+async function buildPixabaySlide(
+  pixabayQuery: string,
+  imagePrompt: string,
+  overlays: TextOverlay[]
+): Promise<Slide> {
+  try {
+    const imageUrl = await searchPixabayImage(pixabayQuery);
+    return {
+      id: uuidv4(),
+      imageUrl,
+      imagePrompt,
+      textOverlays: overlays,
+      generationSource: "pixabay",
+    };
+  } catch (err) {
+    console.warn("[generate] Pixabay failed, falling back to AI:", err);
+    const aiSlide = await generateSlide(imagePrompt, overlays);
+    return { ...aiSlide, generationSource: "ai" };
+  }
+}
+
+router.post("/", verifyAuth as any, upload.array("attachments", 12), async (req, res) => {
   try {
     const blurb = req.body.blurb;
+    const postFormat = (req.body.postFormat || "carousel") as PostFormat;
+    const slideCount = postFormat === "carousel" ? clampSlideCount(req.body.slideCount) : 1;
+
     if (!blurb || typeof blurb !== "string") {
       res.status(400).json({ error: "blurb is required" });
       return;
     }
-    if (!req.file) {
-      res.status(400).json({ error: "image file is required" });
+
+    const files = (req.files as Express.Multer.File[]) || [];
+    if (files.length === 0) {
+      res.status(400).json({ error: "at least one attachment is required" });
       return;
     }
 
-    const imageBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+    const imageFiles = files.filter((file) => file.mimetype.startsWith("image/"));
+    const primaryImage = imageFiles[0];
+    if ((postFormat === "carousel" || postFormat === "poster") && !primaryImage) {
+      res.status(400).json({ error: "carousel/poster require at least one image attachment" });
+      return;
+    }
 
-    console.log("[generate] Generating hooks for blurb:", blurb.slice(0, 80));
-    const { hooks } = await generateHooks(blurb);
+    const imageBase64 = primaryImage
+      ? `data:${primaryImage.mimetype};base64,${primaryImage.buffer.toString("base64")}`
+      : "";
+
+    console.log("[generate] Generating hooks", { postFormat, slideCount, attachments: files.length });
+    const { hooks } = await generateHooks(blurb, postFormat);
     console.log("[generate] Got", hooks.length, "hooks, generating images...");
 
     const slideshows: Slideshow[] = await Promise.all(
       hooks.map(async (hookData) => {
-        const slide1Overlays: TextOverlay[] = [
+        const hookOverlay: TextOverlay[] = [
           {
             id: uuidv4(),
             text: hookData.hook.text,
@@ -48,7 +91,7 @@ router.post("/", verifyAuth as any, upload.single("image"), async (req, res) => 
           },
         ];
 
-        const slide2Overlays: TextOverlay[] = hookData.slide2NeedsText
+        const revealOverlay: TextOverlay[] = hookData.slide2NeedsText
           ? [
               {
                 id: uuidv4(),
@@ -61,33 +104,48 @@ router.post("/", verifyAuth as any, upload.single("image"), async (req, res) => 
             ]
           : [];
 
-        const [slide1, slide2] = await Promise.all([
-          // Slide 1: Use Pixabay (free) instead of AI generation
-          (async (): Promise<Slide> => {
-            try {
-              const keywords = hookData.slide1PixabayQuery;
-              console.log("[generate] Pixabay search for slide 1:", keywords);
-              const imageUrl = await searchPixabayImage(keywords);
-              return {
-                id: uuidv4(),
-                imageUrl,
-                imagePrompt: hookData.slide1Prompt,
-                textOverlays: slide1Overlays,
-              };
-            } catch (err) {
-              console.warn("[generate] Pixabay failed, falling back to AI:", err);
-              return generateSlide(hookData.slide1Prompt, slide1Overlays);
+        const slides: Slide[] = [];
+
+        if (postFormat === "carousel") {
+          const aiIndex = Math.max(0, slideCount - 1);
+
+          for (let index = 0; index < slideCount; index++) {
+            if (index === 0) {
+              slides.push(
+                await buildPixabaySlide(
+                  hookData.slide1PixabayQuery,
+                  hookData.slide1Prompt,
+                  hookOverlay
+                )
+              );
+              continue;
             }
-          })(),
-          // Slide 2: AI-generated via Runware, using the uploaded product photo
-          // as a reference so the subject is recognisable in the new scene.
-          generateSlide(hookData.slide2Prompt, slide2Overlays, imageBase64),
-        ]);
+
+            if (index === aiIndex) {
+              const aiSlide = await generateSlide(
+                hookData.slide2Prompt,
+                revealOverlay,
+                imageBase64 || undefined
+              );
+              slides.push({ ...aiSlide, generationSource: "ai" });
+              continue;
+            }
+
+            const query = extractKeywords(`${hookData.slide1PixabayQuery} ${blurb}`);
+            slides.push(
+              await buildPixabaySlide(query, hookData.slide1Prompt, [])
+            );
+          }
+        } else {
+          const prompt = postFormat === "infographic" ? `${hookData.slide2Prompt}. infographic-style composition, clean visual hierarchy, icons and data blocks` : hookData.slide2Prompt;
+          const singleSlide = await generateSlide(prompt, revealOverlay, postFormat === "poster" ? imageBase64 || undefined : undefined);
+          slides.push({ ...singleSlide, generationSource: "ai" });
+        }
 
         return {
           id: uuidv4(),
           hook: hookData.hook,
-          slides: [slide1, slide2] as [typeof slide1, typeof slide2],
+          slides,
         };
       })
     );
@@ -96,7 +154,7 @@ router.post("/", verifyAuth as any, upload.single("image"), async (req, res) => 
 
     const response: GenerateResponse = {
       slideshows,
-      productImageUrl: imageBase64,
+      productImageUrl: imageBase64 || slideshows[0]?.slides[0]?.imageUrl || "",
     };
 
     res.json(response);

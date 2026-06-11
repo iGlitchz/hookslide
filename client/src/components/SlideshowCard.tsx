@@ -14,12 +14,14 @@ interface Props {
   slideshow: Slideshow;
   onClick: () => void;
   onDelete: () => void;
+  onPostTikTok: () => void;
 }
 
-export function SlideshowCard({ slideshow, onClick, onDelete }: Props) {
+export function SlideshowCard({ slideshow, onClick, onDelete, onPostTikTok }: Props) {
   const [hovered, setHovered] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [slide1, slide2] = slideshow.slides;
+  const slide1 = slideshow.slides[0];
+  const slide2 = slideshow.slides[Math.min(1, slideshow.slides.length - 1)] ?? slide1;
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -72,7 +74,10 @@ export function SlideshowCard({ slideshow, onClick, onDelete }: Props) {
         </button>
         <button
           className="card-action-btn"
-          onClick={mockAction("Post to TikTok")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPostTikTok();
+          }}
           title="Post to TikTok"
         >
           <Send size={14} />

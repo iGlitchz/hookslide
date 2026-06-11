@@ -1,6 +1,12 @@
 import { useState, useCallback } from "react";
 import { v4 } from "../utils/uid";
-import type { Submission, Slideshow, Slide, TextOverlay } from "../types";
+import type {
+  Submission,
+  Slideshow,
+  Slide,
+  TextOverlay,
+  GenerationOptions,
+} from "../types";
 import { useLocalStorage } from "./useLocalStorage";
 import { generateSlideshows, regenerateSlide } from "../services/api";
 
@@ -15,19 +21,17 @@ export function useSubmissions() {
   const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(
-    async (imageFile: File, blurb: string) => {
+    async (options: GenerationOptions) => {
       setLoading(true);
       setError(null);
       try {
-        const { slideshows, productImageUrl } = await generateSlideshows(
-          imageFile,
-          blurb
-        );
+        const { slideshows, productImageUrl } = await generateSlideshows(options);
 
         const submission: Submission = {
           id: v4(),
           productImageUrl,
-          brandBlurb: blurb,
+          brandBlurb: options.blurb,
+          postFormat: options.postFormat,
           slideshows,
           createdAt: Date.now(),
         };
@@ -48,15 +52,17 @@ export function useSubmissions() {
     async (
       submissionId: string,
       slideshowId: string,
-      slideIndex: 0 | 1,
+      slideIndex: number,
       imagePrompt: string,
       blurb: string,
+      postFormat: Submission["postFormat"],
       productImageUrl?: string
     ) => {
       const { slide } = await regenerateSlide(
         imagePrompt,
         slideIndex,
         blurb,
+        postFormat || "carousel",
         productImageUrl
       );
 
@@ -67,7 +73,8 @@ export function useSubmissions() {
             ...sub,
             slideshows: sub.slideshows.map((sw) => {
               if (sw.id !== slideshowId) return sw;
-              const slides = [...sw.slides] as [Slide, Slide];
+              if (!sw.slides[slideIndex]) return sw;
+              const slides = [...sw.slides] as Slide[];
               slides[slideIndex] = {
                 ...slide,
                 textOverlays: sw.slides[slideIndex].textOverlays,
@@ -85,7 +92,7 @@ export function useSubmissions() {
     (
       submissionId: string,
       slideshowId: string,
-      slideIndex: 0 | 1,
+      slideIndex: number,
       overlays: TextOverlay[]
     ) => {
       setSubmissions((prev) =>
@@ -95,7 +102,8 @@ export function useSubmissions() {
             ...sub,
             slideshows: sub.slideshows.map((sw) => {
               if (sw.id !== slideshowId) return sw;
-              const slides = [...sw.slides] as [Slide, Slide];
+              if (!sw.slides[slideIndex]) return sw;
+              const slides = [...sw.slides] as Slide[];
               slides[slideIndex] = { ...slides[slideIndex], textOverlays: overlays };
               return { ...sw, slides };
             }),

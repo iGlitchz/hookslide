@@ -1,13 +1,21 @@
-import { useState, useRef, useEffect, useImperativeHandle, forwardRef, type DragEvent } from "react";
+import {
+  useState,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+  type DragEvent,
+  type ClipboardEvent,
+} from "react";
 import { motion } from "framer-motion";
-import { Upload, ArrowRight, Image, X } from "lucide-react";
+import { ArrowRight, Image, X } from "lucide-react";
+import type { GenerationOptions, PostFormat } from "../types";
 
 export interface InputFormHandle {
   remix: (imageUrl: string, blurb: string) => void;
 }
 
 interface Props {
-  onSubmit: (imageFile: File, blurb: string) => void;
+  onSubmit: (options: GenerationOptions) => void;
   loading: boolean;
   hasSubmissions: boolean;
 }
@@ -15,29 +23,73 @@ interface Props {
 export const InputForm = forwardRef<InputFormHandle, Props>(
   function InputForm({ onSubmit, loading, hasSubmissions }, ref) {
   const [blurb, setBlurb] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [postFormat, setPostFormat] = useState<PostFormat>("carousel");
+  const [slideCount, setSlideCount] = useState<number>(6);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (file: File) => {
-    if (!file.type.startsWith("image/")) return;
-    setImageFile(file);
+  const canSubmit = attachments.length > 0 && blurb.trim().length > 0 && !loading;
+
+  const isAllowedFile = (file: File) => {
+    if (file.type.startsWith("image/")) return true;
+    const lowerName = file.name.toLowerCase();
+    return (
+      lowerName.endsWith(".pdf") ||
+      lowerName.endsWith(".docx") ||
+      lowerName.endsWith(".ppt") ||
+      lowerName.endsWith(".pptx")
+    );
+  };
+
+  const syncPreview = (files: File[]) => {
+    const firstImage = files.find((file) => file.type.startsWith("image/"));
+    if (!firstImage) {
+      setPreview(null);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => setPreview(e.target?.result as string);
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(firstImage);
+  };
+
+  const mergeAttachments = (incoming: File[]) => {
+    if (incoming.length === 0) return;
+    setAttachments((prev) => {
+      const next = [...prev];
+      for (const file of incoming) {
+        const alreadyAdded = next.some(
+          (item) =>
+            item.name === file.name &&
+            item.size === file.size &&
+            item.lastModified === file.lastModified
+        );
+        if (!alreadyAdded) next.push(file);
+      }
+      syncPreview(next);
+      return next;
+    });
+  };
+
+  const handleFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const valid = Array.from(fileList).filter(isAllowedFile);
+    mergeAttachments(valid);
   };
 
   useImperativeHandle(ref, () => ({
     remix: async (imageUrl: string, blurbText: string) => {
       setBlurb(blurbText);
+      setPostFormat("carousel");
+      setSlideCount(6);
       setPreview(imageUrl);
       // Convert the imageUrl (base64 data URL) to a File object
       try {
         const res = await fetch(imageUrl);
         const blob = await res.blob();
         const file = new File([blob], "remix-image.jpg", { type: blob.type });
-        setImageFile(file);
+        setAttachments([file]);
       } catch {
         // If conversion fails, just set the preview
       }
@@ -49,14 +101,26 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
   const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
+    handleFiles(e.dataTransfer.files);
+  };
+
+  const handlePaste = (e: ClipboardEvent<HTMLFormElement>) => {
+    const files = e.clipboardData?.files;
+    if (files && files.length > 0) {
+      e.preventDefault();
+      handleFiles(files);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageFile || !blurb.trim() || loading) return;
-    onSubmit(imageFile, blurb.trim());
+    if (!canSubmit) return;
+    onSubmit({
+      blurb: blurb.trim(),
+      postFormat,
+      slideCount: postFormat === "carousel" ? slideCount : 1,
+      attachments,
+    });
   };
 
   return (
@@ -80,6 +144,7 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
 
       <motion.form
         onSubmit={handleSubmit}
+        onPaste={handlePaste}
         className="search-bar-form"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -98,7 +163,7 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
           <div
             className={`image-pill ${preview ? "has-image" : ""}`}
             onClick={() => fileInputRef.current?.click()}
-            title="Upload product reference image"
+            title="Attach product reference files"
           >
             {preview ? (
               <img src={preview} alt="Ref" className="image-pill-preview" />
@@ -106,15 +171,15 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
               <Image size={18} />
             )}
             <span className="image-pill-label">
-              {preview ? "Ref" : "Picture Reference"}
+              {attachments.length > 0 ? `${attachments.length} files` : "Attach Files"}
             </span>
-            {preview && (
+            {attachments.length > 0 && (
               <button
                 type="button"
                 className="image-pill-remove"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setImageFile(null);
+                  setAttachments([]);
                   setPreview(null);
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
@@ -128,11 +193,11 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.pdf,.docx,.ppt,.pptx"
+            multiple
             hidden
             onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFile(file);
+              handleFiles(e.target.files);
             }}
           />
 
@@ -149,7 +214,7 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
           <button
             type="submit"
             className="search-submit-btn"
-            disabled={!imageFile || !blurb.trim() || loading}
+            disabled={!canSubmit}
           >
             {loading ? (
               <div className="spinner small" />
@@ -158,6 +223,49 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
             )}
           </button>
         </div>
+
+        <div className="post-format-controls">
+          <button
+            type="button"
+            className={`post-format-btn ${postFormat === "carousel" ? "active" : ""}`}
+            onClick={() => setPostFormat("carousel")}
+          >
+            Carousel
+          </button>
+          <button
+            type="button"
+            className={`post-format-btn ${postFormat === "infographic" ? "active" : ""}`}
+            onClick={() => setPostFormat("infographic")}
+          >
+            Infographic
+          </button>
+          <button
+            type="button"
+            className={`post-format-btn ${postFormat === "poster" ? "active" : ""}`}
+            onClick={() => setPostFormat("poster")}
+          >
+            Poster
+          </button>
+        </div>
+
+        {postFormat === "carousel" && (
+          <div className="slide-count-controls">
+            <label htmlFor="slide-count">Slides</label>
+            <input
+              id="slide-count"
+              type="range"
+              min={1}
+              max={6}
+              value={slideCount}
+              onChange={(e) => setSlideCount(Number(e.target.value))}
+            />
+            <span>{slideCount}</span>
+          </div>
+        )}
+
+        <p className="attachment-hint">
+          Paste images with Ctrl+V, or attach multiple images, PDF, DOCX, PPT, and PPTX files.
+        </p>
       </motion.form>
     </div>
   );
