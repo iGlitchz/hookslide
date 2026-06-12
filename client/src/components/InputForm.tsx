@@ -1,4 +1,5 @@
 import {
+  AnimatePresence,
   useState,
   useRef,
   useImperativeHandle,
@@ -225,13 +226,72 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
         </div>
 
         <div className="post-format-controls">
-          <button
-            type="button"
-            className={`post-format-btn ${postFormat === "carousel" ? "active" : ""}`}
+          <div
+            role="button"
+            tabIndex={0}
+            className={`post-format-btn carousel-chip ${postFormat === "carousel" ? "active" : ""}`}
             onClick={() => setPostFormat("carousel")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setPostFormat("carousel");
+              }
+            }}
+            aria-label="Carousel format"
           >
-            Carousel
-          </button>
+            <AnimatePresence mode="wait" initial={false}>
+              {postFormat === "carousel" ? (
+                <motion.div
+                  key="carousel-active"
+                  className="carousel-inline-stepper"
+                  initial={{ opacity: 0, x: -14 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  <span className="carousel-inline-label">Carousel</span>
+                  <button
+                    type="button"
+                    className="slide-step-btn inline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSlideCount((prev) => Math.max(1, prev - 1));
+                    }}
+                    disabled={slideCount <= 1}
+                    aria-label="Decrease slide count"
+                  >
+                    -
+                  </button>
+                  <span className="carousel-inline-count" aria-live="polite">
+                    {slideCount}
+                  </span>
+                  <button
+                    type="button"
+                    className="slide-step-btn inline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSlideCount((prev) => Math.min(6, prev + 1));
+                    }}
+                    disabled={slideCount >= 6}
+                    aria-label="Increase slide count"
+                  >
+                    +
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.span
+                  key="carousel-inactive"
+                  className="carousel-chip-label"
+                  initial={{ opacity: 0, x: -14 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  Carousel
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
           <button
             type="button"
             className={`post-format-btn ${postFormat === "infographic" ? "active" : ""}`}
@@ -247,60 +307,6 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
             Poster
           </button>
         </div>
-
-        {postFormat === "carousel" && (
-          <div className="slide-count-controls">
-            <div className="slide-count-header">
-              <label htmlFor="slide-count">Carousel Length</label>
-              <span className="slide-count-badge">{slideCount} slides</span>
-            </div>
-
-            <div className="slide-count-stepper">
-              <button
-                type="button"
-                className="slide-step-btn"
-                onClick={() => setSlideCount((prev) => Math.max(1, prev - 1))}
-                disabled={slideCount <= 1}
-                aria-label="Decrease slide count"
-              >
-                -
-              </button>
-
-              <div className="slide-count-track-wrap">
-                <input
-                  id="slide-count"
-                  type="range"
-                  min={1}
-                  max={6}
-                  value={slideCount}
-                  onChange={(e) => setSlideCount(Number(e.target.value))}
-                  className="slide-count-range"
-                  style={{
-                    ["--slide-progress" as any]: `${((slideCount - 1) / 5) * 100}%`,
-                  }}
-                />
-                <div className="slide-count-dots" aria-hidden>
-                  {[1, 2, 3, 4, 5, 6].map((value) => (
-                    <span
-                      key={value}
-                      className={`slide-dot ${slideCount >= value ? "active" : ""}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="slide-step-btn"
-                onClick={() => setSlideCount((prev) => Math.min(6, prev + 1))}
-                disabled={slideCount >= 6}
-                aria-label="Increase slide count"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        )}
 
         <p className="attachment-hint">
           Paste images with Ctrl+V, or attach multiple images, PDF, DOCX, PPT, and PPTX files.
