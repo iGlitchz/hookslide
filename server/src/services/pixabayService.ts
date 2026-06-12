@@ -32,7 +32,12 @@ export async function searchPixabayImage(
 
   // Pick a random result from the pool for variety
   const idx = Math.floor(Math.random() * data.hits.length);
-  return data.hits[idx].largeImageURL;
+  const hit = data.hits[idx];
+  const picked = hit.webformatURL || hit.largeImageURL || hit.previewURL;
+  if (!picked) {
+    throw new Error(`Pixabay hit missing image URLs for: ${query}`);
+  }
+  return picked.replace(/^http:\/\//i, "https://");
 }
 
 const HERO_QUERIES = [

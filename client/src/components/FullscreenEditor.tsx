@@ -5,6 +5,7 @@ import { toPng, toJpeg } from "html-to-image";
 import type { Slideshow, Slide, TextOverlay as TextOverlayType } from "../types";
 import { TextOverlay } from "./TextOverlay";
 import { v4 } from "../utils/uid";
+import { resolveImageUrl } from "../utils/resolveImageUrl";
 
 interface Props {
   slideshow: Slideshow;
@@ -158,7 +159,11 @@ export function FullscreenEditor({
               <div className="spinner small" />
             </div>
           )}
-          <img src={slide.imageUrl} alt="" className="editor-slide-image" />
+          <img
+            src={resolveImageUrl(slide.imageUrl)}
+            alt=""
+            className="editor-slide-image"
+          />
           {slide.textOverlays
             .filter((o) => o.visible)
             .map((overlay) => (

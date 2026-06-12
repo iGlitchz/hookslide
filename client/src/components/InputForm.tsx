@@ -250,16 +250,55 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
 
         {postFormat === "carousel" && (
           <div className="slide-count-controls">
-            <label htmlFor="slide-count">Slides</label>
-            <input
-              id="slide-count"
-              type="range"
-              min={1}
-              max={6}
-              value={slideCount}
-              onChange={(e) => setSlideCount(Number(e.target.value))}
-            />
-            <span>{slideCount}</span>
+            <div className="slide-count-header">
+              <label htmlFor="slide-count">Carousel Length</label>
+              <span className="slide-count-badge">{slideCount} slides</span>
+            </div>
+
+            <div className="slide-count-stepper">
+              <button
+                type="button"
+                className="slide-step-btn"
+                onClick={() => setSlideCount((prev) => Math.max(1, prev - 1))}
+                disabled={slideCount <= 1}
+                aria-label="Decrease slide count"
+              >
+                -
+              </button>
+
+              <div className="slide-count-track-wrap">
+                <input
+                  id="slide-count"
+                  type="range"
+                  min={1}
+                  max={6}
+                  value={slideCount}
+                  onChange={(e) => setSlideCount(Number(e.target.value))}
+                  className="slide-count-range"
+                  style={{
+                    ["--slide-progress" as any]: `${((slideCount - 1) / 5) * 100}%`,
+                  }}
+                />
+                <div className="slide-count-dots" aria-hidden>
+                  {[1, 2, 3, 4, 5, 6].map((value) => (
+                    <span
+                      key={value}
+                      className={`slide-dot ${slideCount >= value ? "active" : ""}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="slide-step-btn"
+                onClick={() => setSlideCount((prev) => Math.min(6, prev + 1))}
+                disabled={slideCount >= 6}
+                aria-label="Increase slide count"
+              >
+                +
+              </button>
+            </div>
           </div>
         )}
 
