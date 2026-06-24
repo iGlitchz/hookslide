@@ -9,14 +9,14 @@ import { FullscreenEditor } from "./components/FullscreenEditor";
 import { AuthModal } from "./components/AuthModal";
 import { PaywallModal } from "./components/PaywallModal";
 import { AccountsDashboardModal } from "./components/AccountsDashboardModal";
-import { TikTokPostModal } from "./components/TikTokPostModal";
+import { PublishPostModal } from "./components/PublishPostModal";
 import { TermsPage } from "./components/TermsPage";
 import { PrivacyPage } from "./components/PrivacyPage";
 import { useSubmissions } from "./hooks/useSubmissions";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
 import { SUBSCRIPTION_REQUIRED } from "./services/api";
-import type { Slideshow, TextOverlay } from "./types";
+import type { PublishPlatform, Slideshow, TextOverlay } from "./types";
 
 export default function App() {
   const { session, user, loading: authLoading, signUp, signIn, signOut } = useAuth();
@@ -33,7 +33,10 @@ export default function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showAccountsDashboard, setShowAccountsDashboard] = useState(false);
-  const [tiktokTarget, setTikTokTarget] = useState<Slideshow | null>(null);
+  const [publishTarget, setPublishTarget] = useState<{
+    slideshow: Slideshow;
+    platform: PublishPlatform;
+  } | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [page, setPage] = useState<"home" | "terms" | "privacy">("home");
 
@@ -218,7 +221,17 @@ export default function App() {
           onPostTikTok={(submissionId, slideshowId) => {
             const submission = submissions.find((item) => item.id === submissionId);
             const slideshow = submission?.slideshows.find((item) => item.id === slideshowId);
-            if (slideshow) setTikTokTarget(slideshow);
+            if (slideshow) setPublishTarget({ slideshow, platform: "tiktok" });
+          }}
+          onPostInstagram={(submissionId, slideshowId) => {
+            const submission = submissions.find((item) => item.id === submissionId);
+            const slideshow = submission?.slideshows.find((item) => item.id === slideshowId);
+            if (slideshow) setPublishTarget({ slideshow, platform: "instagram" });
+          }}
+          onSchedulePost={(submissionId, slideshowId) => {
+            const submission = submissions.find((item) => item.id === submissionId);
+            const slideshow = submission?.slideshows.find((item) => item.id === slideshowId);
+            if (slideshow) setPublishTarget({ slideshow, platform: "schedule" });
           }}
         />
       </div>
@@ -271,8 +284,12 @@ export default function App() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {tiktokTarget && (
-          <TikTokPostModal slideshow={tiktokTarget} onClose={() => setTikTokTarget(null)} />
+        {publishTarget && (
+          <PublishPostModal
+            slideshow={publishTarget.slideshow}
+            platform={publishTarget.platform}
+            onClose={() => setPublishTarget(null)}
+          />
         )}
       </AnimatePresence>
 

@@ -1,13 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import {
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Instagram,
-  Plus,
-  Send,
-} from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Instagram, Plus, Send } from "lucide-react";
 import type { PublishPlatform, Slide, Slideshow, TextOverlay as TextOverlayType } from "../types";
 import { getTikTokStatus, postToTikTok, startTikTokConnect, type TikTokStatus } from "../services/api";
 import { TextOverlay } from "./TextOverlay";
@@ -63,7 +56,7 @@ function formatScheduleLabel(value: string) {
   });
 }
 
-export function TikTokPostModal({ slideshow, platform, onClose }: Props) {
+export function PublishPostModal({ slideshow, platform, onClose }: Props) {
   const meta = PLATFORM_META[platform];
   const [caption, setCaption] = useState(slideshow.hook.text);
   const [firstComment, setFirstComment] = useState("");

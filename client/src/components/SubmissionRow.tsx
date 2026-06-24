@@ -10,6 +10,8 @@ interface Props {
   onDelete: (submissionId: string, slideshowId: string) => void;
   onRemix: (imageUrl: string, blurb: string) => void;
   onPostTikTok: (submissionId: string, slideshowId: string) => void;
+  onPostInstagram: (submissionId: string, slideshowId: string) => void;
+  onSchedulePost: (submissionId: string, slideshowId: string) => void;
 }
 
 const containerVariants = {
@@ -37,6 +39,8 @@ export function SubmissionRow({
   onDelete,
   onRemix,
   onPostTikTok,
+  onPostInstagram,
+  onSchedulePost,
 }: Props) {
   return (
     <motion.div
@@ -73,6 +77,8 @@ export function SubmissionRow({
               onClick={() => onCardClick(submission.id, sw.id)}
               onDelete={() => onDelete(submission.id, sw.id)}
               onPostTikTok={() => onPostTikTok(submission.id, sw.id)}
+              onPostInstagram={() => onPostInstagram(submission.id, sw.id)}
+              onSchedulePost={() => onSchedulePost(submission.id, sw.id)}
             />
           </motion.div>
         ))}

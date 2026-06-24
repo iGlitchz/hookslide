@@ -1,4 +1,4 @@
-import type { Slideshow, Slide, GenerationOptions, PostFormat } from "../types";
+import type { Slideshow, Slide, GenerationOptions, PostFormat, PublishPlatform } from "../types";
 import { supabase } from "./supabaseClient";
 
 export const SUBSCRIPTION_REQUIRED = "subscription_required";
@@ -99,6 +99,9 @@ export async function startTikTokConnect(): Promise<{ url: string }> {
 export async function postToTikTok(payload: {
   caption: string;
   slides: Array<{ imageUrl: string }>;
+  platform?: PublishPlatform;
+  firstComment?: string;
+  scheduleAt?: string;
 }): Promise<{ queued: boolean; message?: string }> {
   const res = await fetch(`${API_BASE}/api/tiktok/post`, {
     method: "POST",

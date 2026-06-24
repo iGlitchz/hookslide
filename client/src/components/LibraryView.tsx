@@ -11,6 +11,8 @@ interface Props {
   onDelete: (submissionId: string, slideshowId: string) => void;
   onRemix: (imageUrl: string, blurb: string) => void;
   onPostTikTok: (submissionId: string, slideshowId: string) => void;
+  onPostInstagram: (submissionId: string, slideshowId: string) => void;
+  onSchedulePost: (submissionId: string, slideshowId: string) => void;
 }
 
 export function LibraryView({
@@ -19,6 +21,8 @@ export function LibraryView({
   onDelete,
   onRemix,
   onPostTikTok,
+  onPostInstagram,
+  onSchedulePost,
 }: Props) {
   if (submissions.length === 0) return null;
 
@@ -39,6 +43,8 @@ export function LibraryView({
           onDelete={onDelete}
           onRemix={onRemix}
           onPostTikTok={onPostTikTok}
+          onPostInstagram={onPostInstagram}
+          onSchedulePost={onSchedulePost}
         />
       ))}
     </motion.div>

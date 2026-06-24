@@ -15,9 +15,18 @@ interface Props {
   onClick: () => void;
   onDelete: () => void;
   onPostTikTok: () => void;
+  onPostInstagram: () => void;
+  onSchedulePost: () => void;
 }
 
-export function SlideshowCard({ slideshow, onClick, onDelete, onPostTikTok }: Props) {
+export function SlideshowCard({
+  slideshow,
+  onClick,
+  onDelete,
+  onPostTikTok,
+  onPostInstagram,
+  onSchedulePost,
+}: Props) {
   const [hovered, setHovered] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const slide1 = slideshow.slides[0];
@@ -84,14 +93,20 @@ export function SlideshowCard({ slideshow, onClick, onDelete, onPostTikTok }: Pr
         </button>
         <button
           className="card-action-btn"
-          onClick={mockAction("Post to Instagram")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPostInstagram();
+          }}
           title="Post to Instagram"
         >
           <Instagram size={14} />
         </button>
         <button
           className="card-action-btn"
-          onClick={mockAction("Schedule Post")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSchedulePost();
+          }}
           title="Schedule Post"
         >
           <Calendar size={14} />

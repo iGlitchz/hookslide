@@ -28,6 +28,7 @@ export interface Slideshow {
 }
 
 export type PostFormat = "carousel" | "infographic" | "poster";
+export type PublishPlatform = "tiktok" | "instagram" | "schedule";
 
 export interface GenerationOptions {
   blurb: string;
