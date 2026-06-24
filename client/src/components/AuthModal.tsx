@@ -5,15 +5,24 @@ interface AuthModalProps {
   onAuth: (email: string, password: string, mode: "signin" | "signup") => Promise<{ error: string | null }>;
   loading?: boolean;
   onClose?: () => void;
+  initialMode?: "signin" | "signup";
+  source?: "default" | "tiktok";
 }
 
-export function AuthModal({ onAuth, loading, onClose }: AuthModalProps) {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+export function AuthModal({
+  onAuth,
+  loading,
+  onClose,
+  initialMode = "signin",
+  source = "default",
+}: AuthModalProps) {
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const isTikTokSignup = source === "tiktok" && mode === "signup";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,21 +68,23 @@ export function AuthModal({ onAuth, loading, onClose }: AuthModalProps) {
           <span>Hook Slide</span>
         </div>
 
-        <h2>{mode === "signin" ? "Welcome back" : "Create account"}</h2>
+        <h2>{mode === "signin" ? "Welcome back" : isTikTokSignup ? "Sign up with TikTok" : "Create account"}</h2>
         <p className="auth-subtitle">
           {mode === "signin"
             ? "Sign in to access your slideshow library."
-            : "Start creating scroll-stopping hook slides."}
+            : isTikTokSignup
+              ? "Use your email or username and a password to create your account."
+              : "Start creating scroll-stopping hook slides."}
         </p>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
-            Email
+            {isTikTokSignup ? "Email or username" : "Email"}
             <input
-              type="email"
+              type={isTikTokSignup ? "text" : "email"}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={isTikTokSignup ? "you@example.com or @username" : "you@example.com"}
               required
               autoFocus
             />

@@ -32,6 +32,8 @@ export default function App() {
 
   const [showPaywall, setShowPaywall] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [authSource, setAuthSource] = useState<"default" | "tiktok">("default");
   const [showAccountsDashboard, setShowAccountsDashboard] = useState(false);
   const [publishTarget, setPublishTarget] = useState<{
     slideshow: Slideshow;
@@ -73,6 +75,8 @@ export default function App() {
   const handleSubmit = useCallback(
     async (...args: Parameters<typeof submit>) => {
       if (!session) {
+        setAuthMode("signin");
+        setAuthSource("default");
         setShowAuth(true);
         return;
       }
@@ -121,6 +125,8 @@ export default function App() {
   const handleRegenerate = useCallback(
     async (...args: Parameters<typeof regenerate>) => {
       if (!session) {
+        setAuthMode("signin");
+        setAuthSource("default");
         setShowAuth(true);
         return;
       }
@@ -174,17 +180,29 @@ export default function App() {
             </button>
           </>
         ) : (
-          <button className="signout-btn" onClick={() => setShowAuth(true)}>
+          <button
+            className="signout-btn"
+            onClick={() => {
+              setAuthMode("signin");
+              setAuthSource("default");
+              setShowAuth(true);
+            }}
+          >
             Sign in
           </button>
         )}
-        <div className="tiktok-login-wrap" data-tooltip="Upload straight to TikTok">
+        <div className="tiktok-login-wrap" data-tooltip="Create an account to post to TikTok">
           <button
             className="signout-btn tiktok-login-btn"
             type="button"
-            aria-label="Login to TikTok mockup"
+            aria-label="Sign up with TikTok"
+            onClick={() => {
+              setAuthMode("signup");
+              setAuthSource("tiktok");
+              setShowAuth(true);
+            }}
           >
-            Login to TikTok
+            Sign up with TikTok
           </button>
         </div>
       </div>
@@ -273,6 +291,8 @@ export default function App() {
           <AuthModal
             onAuth={handleAuth}
             onClose={() => setShowAuth(false)}
+            initialMode={authMode}
+            source={authSource}
           />
         )}
       </AnimatePresence>

@@ -1,5 +1,4 @@
 import {
-  AnimatePresence,
   useState,
   useRef,
   useImperativeHandle,
@@ -7,7 +6,7 @@ import {
   type DragEvent,
   type ClipboardEvent,
 } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Image, X } from "lucide-react";
 import type { GenerationOptions, PostFormat } from "../types";
 
