@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: hookslide-server
+    env: node
+    region: oregon
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.0.0

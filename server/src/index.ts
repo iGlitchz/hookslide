@@ -1,6 +1,6 @@
 import "./loadEnv.js"; // Must be first — loads .env before any other local module reads process.env
 
-// Catch any unhandled error so Railway logs show the cause instead of a silent crash
+// Catch any unhandled error so Render logs show the cause instead of a silent crash
 process.on("uncaughtException", (err) => {
   console.error("UNCAUGHT EXCEPTION:", err);
   process.exit(1);
@@ -24,7 +24,7 @@ const app = express();
 const PORT = Number(process.env.PORT || 3001);
 const HOST = "0.0.0.0";
 
-// Log which env vars are present so we can spot missing keys in Railway
+// Log which env vars are present so we can spot missing keys in Render
 const requiredEnvVars = [
   "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
   "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_ID",
