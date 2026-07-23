@@ -13,7 +13,7 @@ const distDir = path.join(process.cwd(), "dist");
 fs.mkdirSync(distDir, { recursive: true });
 fs.writeFileSync(
   path.join(distDir, "index.js"),
-  'import "./server/dist/index.js";\n',
+  'import "../server/dist/index.js";\n',
   "utf8"
 );
 
