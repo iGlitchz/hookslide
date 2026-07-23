@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { HeroBanner } from "./components/HeroBanner";
 import { InputForm } from "./components/InputForm";
 import type { InputFormHandle } from "./components/InputForm";
