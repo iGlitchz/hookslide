@@ -68,6 +68,16 @@ app.use("/api/create-checkout-session", createCheckoutSessionRouter);
 app.use("/api/tiktok", tiktokRouter);
 app.use("/api/image-proxy", imageProxyRouter);
 
+// TikTok domain verification files (dynamically handles any /tiktok*.txt request)
+app.get("/tiktok:code.txt", (req, res) => {
+  const code = req.params.code;
+  if (code.startsWith("-developers-site-verification=")) {
+    const val = code.replace("-developers-site-verification=", "");
+    return res.type("text/plain").send(`tiktok-developers-site-verification=${val}`);
+  }
+  res.type("text/plain").send(`tiktok-developers-site-verification=${code}`);
+});
+
 app.get("/", (_req, res) => {
   res.status(200).send("ok");
 });
