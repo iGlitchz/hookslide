@@ -19,10 +19,13 @@ interface Props {
   onSubmit: (options: GenerationOptions) => void;
   loading: boolean;
   hasSubmissions: boolean;
+  useLastImage?: boolean;
+  onToggleLastImage?: () => void;
+  hasLastImage?: boolean;
 }
 
 export const InputForm = forwardRef<InputFormHandle, Props>(
-  function InputForm({ onSubmit, loading, hasSubmissions }, ref) {
+  function InputForm({ onSubmit, loading, hasSubmissions, useLastImage, onToggleLastImage, hasLastImage }, ref) {
   const [blurb, setBlurb] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [postFormat, setPostFormat] = useState<PostFormat>("carousel");
@@ -306,6 +309,18 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
           >
             Poster
           </button>
+
+          {/* Last Image checkbox */}
+          <label className={`last-image-toggle ${!hasLastImage ? 'disabled' : ''}`} title={hasLastImage ? 'Append your saved last slide image' : 'Set a last slide image in your profile first'}>
+            <input
+              type="checkbox"
+              checked={!!useLastImage && !!hasLastImage}
+              onChange={() => onToggleLastImage?.()}
+              disabled={!hasLastImage}
+            />
+            <span className="last-image-check-box" />
+            <span className="last-image-check-label">Last Image</span>
+          </label>
         </div>
 
         <p className="attachment-hint">

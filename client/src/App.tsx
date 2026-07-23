@@ -15,6 +15,7 @@ import { PrivacyPage } from "./components/PrivacyPage";
 import { useSubmissions } from "./hooks/useSubmissions";
 import { useAuth } from "./hooks/useAuth";
 import { useProfile } from "./hooks/useProfile";
+import { useUserProfile } from "./hooks/useUserProfile";
 import { SUBSCRIPTION_REQUIRED } from "./services/api";
 import type { PublishPlatform, Slideshow, TextOverlay } from "./types";
 
@@ -24,6 +25,15 @@ export default function App() {
 
   const { submissions, loading, error, submit, regenerate, updateOverlays, deleteSlideshow } =
     useSubmissions();
+
+  const {
+    profile: userProfile,
+    setLastCarouselImage,
+    addMoodboardImage,
+    removeMoodboardImage,
+    toggleUseLastImage,
+    incrementGenerated,
+  } = useUserProfile();
 
   const [editorState, setEditorState] = useState<{
     submissionId: string;
@@ -237,6 +247,9 @@ export default function App() {
             onSubmit={handleSubmit}
             loading={loading}
             hasSubmissions={submissions.length > 0}
+            useLastImage={userProfile.useLastImage}
+            onToggleLastImage={toggleUseLastImage}
+            hasLastImage={!!userProfile.lastCarouselImage}
           />
         </motion.div>
       </HeroBanner>
@@ -318,7 +331,14 @@ export default function App() {
 
       <AnimatePresence>
         {showAccountsDashboard && (
-          <AccountsDashboardModal onClose={() => setShowAccountsDashboard(false)} />
+          <AccountsDashboardModal
+            onClose={() => setShowAccountsDashboard(false)}
+            userEmail={user?.email}
+            profile={userProfile}
+            onSetLastImage={setLastCarouselImage}
+            onAddMoodboard={addMoodboardImage}
+            onRemoveMoodboard={removeMoodboardImage}
+          />
         )}
       </AnimatePresence>
 
