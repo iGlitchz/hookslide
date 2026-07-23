@@ -311,16 +311,28 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
           </button>
 
           {/* Last Image checkbox */}
-          <label className={`last-image-toggle ${!hasLastImage ? 'disabled' : ''}`} title={hasLastImage ? 'Append your saved last slide image' : 'Set a last slide image in your profile first'}>
-            <input
-              type="checkbox"
-              checked={!!useLastImage && !!hasLastImage}
-              onChange={() => onToggleLastImage?.()}
-              disabled={!hasLastImage}
-            />
-            <span className="last-image-check-box" />
-            <span className="last-image-check-label">Last Image</span>
-          </label>
+          <div className="last-image-toggle-wrapper">
+            <label
+              className={`last-image-toggle ${!hasLastImage ? "disabled" : ""}`}
+              onClick={() => {
+                if (hasLastImage) onToggleLastImage?.();
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={!!useLastImage && !!hasLastImage}
+                onChange={() => {}}
+                disabled={!hasLastImage}
+              />
+              <span className="last-image-check-box" />
+              <span className="last-image-check-label">Last Image</span>
+            </label>
+            {!hasLastImage && (
+              <div className="last-image-tooltip">
+                Setup your last image in the accounts tab
+              </div>
+            )}
+          </div>
         </div>
 
         <p className="attachment-hint">

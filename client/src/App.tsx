@@ -8,7 +8,7 @@ import { LibraryView } from "./components/LibraryView";
 import { FullscreenEditor } from "./components/FullscreenEditor";
 import { AuthModal } from "./components/AuthModal";
 import { PaywallModal } from "./components/PaywallModal";
-import { AccountsDashboardModal } from "./components/AccountsDashboardModal";
+import { DashboardPage } from "./components/DashboardPage";
 import { PublishPostModal } from "./components/PublishPostModal";
 import { TermsPage } from "./components/TermsPage";
 import { PrivacyPage } from "./components/PrivacyPage";
@@ -44,7 +44,9 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [authSource, setAuthSource] = useState<"default" | "tiktok">("default");
-  const [showAccountsDashboard, setShowAccountsDashboard] = useState(false);
+  const [showAccountsDashboard, setShowAccountsDashboard] = useState(
+    window.location.pathname === "/dashboard"
+  );
   const [publishTarget, setPublishTarget] = useState<{
     slideshow: Slideshow;
     platform: PublishPlatform;
@@ -331,13 +333,19 @@ export default function App() {
 
       <AnimatePresence>
         {showAccountsDashboard && (
-          <AccountsDashboardModal
-            onClose={() => setShowAccountsDashboard(false)}
+          <DashboardPage
+            onClose={() => {
+              setShowAccountsDashboard(false);
+              if (window.location.pathname === "/dashboard") {
+                window.history.pushState({}, "", "/");
+              }
+            }}
             userEmail={user?.email}
             profile={userProfile}
             onSetLastImage={setLastCarouselImage}
             onAddMoodboard={addMoodboardImage}
             onRemoveMoodboard={removeMoodboardImage}
+            onToggleLastImage={toggleUseLastImage}
           />
         )}
       </AnimatePresence>
