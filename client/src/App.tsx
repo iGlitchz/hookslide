@@ -41,9 +41,21 @@ export default function App() {
   } | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [page, setPage] = useState<"home" | "terms" | "privacy">("home");
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputFormRef = useRef<InputFormHandle>(null);
+
+  // Track scroll position for Framer Motion center-to-sidebar docking
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 150);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isDocked = submissions.length > 0 || loading || isScrolled;
 
   // Handle Stripe redirect back to app
   useEffect(() => {
@@ -214,12 +226,19 @@ export default function App() {
       )}
 
       <HeroBanner>
-        <InputForm
-          ref={inputFormRef}
-          onSubmit={handleSubmit}
-          loading={loading}
-          hasSubmissions={submissions.length > 0}
-        />
+        <motion.div
+          layout
+          layoutId="agent-command-bar"
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className={`agent-command-bar-wrapper ${isDocked ? "sidebar-panel" : "center-hero"}`}
+        >
+          <InputForm
+            ref={inputFormRef}
+            onSubmit={handleSubmit}
+            loading={loading}
+            hasSubmissions={submissions.length > 0}
+          />
+        </motion.div>
       </HeroBanner>
 
       <div className="results-section" ref={resultsRef}>

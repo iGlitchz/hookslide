@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Image, X } from "lucide-react";
 import type { GenerationOptions, PostFormat } from "../types";
+import { AgentThinkingLog } from "./AgentThinkingLog";
 
 export interface InputFormHandle {
   remix: (imageUrl: string, blurb: string) => void;
@@ -310,6 +311,8 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
         <p className="attachment-hint">
           Paste images with Ctrl+V, or attach multiple images, PDF, DOCX, PPT, and PPTX files.
         </p>
+
+        {loading && <AgentThinkingLog />}
       </motion.form>
     </div>
   );
