@@ -53,12 +53,23 @@ export default function App() {
   } | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [page, setPage] = useState<"home" | "terms" | "privacy">("home");
+  const [agentMode, setAgentMode] = useState<boolean>(() => {
+    return localStorage.getItem("hookslide-agent-mode") === "true";
+  });
+
+  const toggleAgentMode = useCallback(() => {
+    setAgentMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("hookslide-agent-mode", String(next));
+      return next;
+    });
+  }, []);
+
   const [isScrolled, setIsScrolled] = useState(false);
 
   const resultsRef = useRef<HTMLDivElement>(null);
   const inputFormRef = useRef<InputFormHandle>(null);
 
-  // Track scroll position for Framer Motion center-to-sidebar docking
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 150);
@@ -67,7 +78,7 @@ export default function App() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isDocked = submissions.length > 0 || loading || isScrolled;
+  const isDocked = agentMode || submissions.length > 0 || loading || isScrolled;
 
   // Handle Stripe redirect back to app
   useEffect(() => {
@@ -215,18 +226,27 @@ export default function App() {
             Sign in
           </button>
         )}
-        <div className="tiktok-login-wrap" data-tooltip="Create an account to post to TikTok">
+        <div className="account-bar-column">
+          <div className="tiktok-login-wrap" data-tooltip="Create an account to post to TikTok">
+            <button
+              className="signout-btn tiktok-login-btn"
+              type="button"
+              aria-label="Sign up with TikTok"
+              onClick={() => {
+                setAuthMode("signup");
+                setAuthSource("tiktok");
+                setShowAuth(true);
+              }}
+            >
+              Sign up with TikTok
+            </button>
+          </div>
           <button
-            className="signout-btn tiktok-login-btn"
+            className={`agent-mode-btn ${agentMode ? "active" : ""}`}
             type="button"
-            aria-label="Sign up with TikTok"
-            onClick={() => {
-              setAuthMode("signup");
-              setAuthSource("tiktok");
-              setShowAuth(true);
-            }}
+            onClick={toggleAgentMode}
           >
-            Sign up with TikTok
+            ⚡ {agentMode ? "Agent Mode Active (Experimental)" : "Try agent mode (experimental)"}
           </button>
         </div>
       </div>
@@ -252,6 +272,7 @@ export default function App() {
             useLastImage={userProfile.useLastImage}
             onToggleLastImage={toggleUseLastImage}
             hasLastImage={!!userProfile.lastCarouselImage}
+            agentMode={agentMode}
           />
         </motion.div>
       </HeroBanner>

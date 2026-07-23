@@ -22,10 +22,11 @@ interface Props {
   useLastImage?: boolean;
   onToggleLastImage?: () => void;
   hasLastImage?: boolean;
+  agentMode?: boolean;
 }
 
 export const InputForm = forwardRef<InputFormHandle, Props>(
-  function InputForm({ onSubmit, loading, hasSubmissions, useLastImage, onToggleLastImage, hasLastImage }, ref) {
+  function InputForm({ onSubmit, loading, hasSubmissions, useLastImage, onToggleLastImage, hasLastImage, agentMode }, ref) {
   const [blurb, setBlurb] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [postFormat, setPostFormat] = useState<PostFormat>("carousel");
@@ -335,11 +336,14 @@ export const InputForm = forwardRef<InputFormHandle, Props>(
           </div>
         </div>
 
-        <p className="attachment-hint">
-          Paste images with Ctrl+V, or attach multiple images, PDF, DOCX, PPT, and PPTX files.
-        </p>
+        {agentMode && (
+          <div className="agent-mode-badge-bar">
+            <span className="agent-badge-pulse" />
+            <span className="agent-badge-text">AGENT MODE ACTIVE • Auto-Music & Reasoning Enabled</span>
+          </div>
+        )}
 
-        {loading && <AgentThinkingLog />}
+        {(loading || agentMode) && <AgentThinkingLog />}
       </motion.form>
     </div>
   );
