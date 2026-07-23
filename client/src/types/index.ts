@@ -11,6 +11,9 @@ export interface TextOverlay {
   y: number;
   fontSize: number;
   visible: boolean;
+  color?: string;
+  fontFamily?: string;
+  stylePreset?: string;
 }
 
 export interface Slide {
